@@ -29,14 +29,31 @@ jobs:
     # CircleCI will report the results back to your VCS provider.
     steps:
       - checkout
-      - python/install-packages:
-          pkg-manager: pip
-          # app-dir: ~/project/package-directory/  # If you're requirements.txt isn't in the root directory.
-          # pip-dependency-file: test-requirements.txt  # if you have a different name for your requirements file, maybe one that combines your runtime and test requirements.
       - run:
-          name: Run tests
-          # This assumes pytest is installed via the install-package step above
-          command: pytest
+          name: Install python dependencies
+          command:  |
+            python3 -m venv .env
+            . .env/bin/activate
+            pip install -U pip setuptools wheel codecov
+            pip install -r requirements.txt
+
+      - run:
+          name: Installs for deploy
+          command: |
+            mkdir -p $HOME/bin
+            export PATH=$HOME/bin:$PATH
+            curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&version=6.34.0" | tar xzv -C $HOME/bin
+            cf install-plugin autopilot -f -r CF-Community
+      - deploy:
+          name: Deploy tricia-demo-app
+          command: |
+            export PATH=$HOME/bin:$PATH
+            . .env/bin/activate
+            cf api https://api.fr.cloud.gov
+            cf auth "$FEC_CF_USERNAME_DEMO" "$FEC_CF_PASSWORD_DEMO"
+            cf target -o "$FEC_CF_ORG" -s "$FEC_CF_SPACE"
+            cf zero-downtime-push tricia-demo-app -f manifest.yml
+
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
