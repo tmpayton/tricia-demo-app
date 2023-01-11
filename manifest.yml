@@ -1,0 +1,7 @@
+---
+applications:
+- name: flask-demo
+  random-route: true
+  buildpacks:
+    - python_buildpack
+  memory: 512M
