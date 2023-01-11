@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello():
-    return 'Hello World from FEC!'
+    return 'This is a test of the CI/CD pipeline...!'
 
 
 port = os.getenv('PORT', '8080')
